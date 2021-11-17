@@ -1,0 +1,27 @@
+
+def transform(data):
+    # so that the WHOIS_COUNTRY column is the same each run
+    data["WHOIS_COUNTRY"] = pd.read_csv("Train.csv")["WHOIS_COUNTRY"]
+
+    data["WHOIS_COUNTRY"] = data["WHOIS_COUNTRY"].apply(lambda x: x.upper())
+    data["WHOIS_COUNTRY"] = data["WHOIS_COUNTRY"].str.replace('UNITED KINGDOM', 'UK', case= False) 
+    data["WHOIS_COUNTRY"] = data["WHOIS_COUNTRY"].fillna("NONE")
+    X= data["WHOIS_COUNTRY"]
+    index  = 0
+    array = []
+    for name in list(X.value_counts().index):
+       array.append([name, index])
+       index += 1
+
+    COUNTRY_enc = OneHotEncoder(drop='first').fit(array)
+
+    country_dictionary = {}
+    cats = COUNTRY_enc.categories_[0]
+    indices = COUNTRY_enc.categories_[1]
+    for cat, index in zip(cats, indices):
+        country_dictionary[cat] = index
+
+
+    countries = [[country, country_dictionary[country]] for country in list(data["WHOIS_COUNTRY"].fillna("NONE"))]
+    data["WHOIS_COUNTRY"] = [x[1] for x in countries]
+
